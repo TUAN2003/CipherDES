@@ -43,7 +43,7 @@ namespace WinFormsEncryptionDES
         private void button_detail_Click(object sender, EventArgs e)
         {
             Form2 form = null;
-            foreach(Form item in System.Windows.Forms.Application.OpenForms)
+            foreach(Form item in Application.OpenForms)
             {
                 if (item.Name.Equals("Form2") && item is WinFormsEncryptionDES.Form2)
                 {

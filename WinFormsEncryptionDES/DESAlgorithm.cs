@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
@@ -140,8 +141,8 @@ namespace WinFormsEncryptionDES
         private UInt64[] _blocks;
         private bool _isDataHex = true;
         public string[] HistoryKey = new string[16];
-        public string[] HistoryLeft = new string[16];
-        public string[] HistoryRight = new string[16];
+        public List<string> HistoryLeft = new List<string>();
+        public List<string> HistoryRight = new List<string>();
         public bool IsDataHex
         {
             set => _isDataHex = value;
@@ -166,6 +167,7 @@ namespace WinFormsEncryptionDES
             }
             get => _data;
         }
+        public UInt64[] Blocks { get => _blocks; }
         public DESAlgorithm()
             : this(null, 0)
         {
@@ -495,8 +497,8 @@ namespace WinFormsEncryptionDES
         private void SaveHistory(int index,UInt64 hKey,UInt32 hLeft,UInt32 hRight)
         {
             HistoryKey[index] = hKey.ToString("x");
-            HistoryLeft[index] = hLeft.ToString("x");
-            HistoryRight[index] = hRight.ToString("x");
+            HistoryLeft.Add(hLeft.ToString("x"));
+            HistoryRight.Add(hRight.ToString("x"));
         }
         private string HexToPlainText(string hex)
         {
