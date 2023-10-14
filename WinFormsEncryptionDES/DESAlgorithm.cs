@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WinFormsEncryptionDES
 {
@@ -174,9 +172,7 @@ namespace WinFormsEncryptionDES
 
         }
         public DESAlgorithm(string data,UInt64 key, bool isDataHex = true)
-        {
-            Inital(data, key,isDataHex);
-        }
+           => Inital(data, key,isDataHex);
         private void Inital(string data,UInt64 key, bool isDataHex)
         {
             Data = data;
@@ -204,21 +200,13 @@ namespace WinFormsEncryptionDES
             return new UInt32[] { left, right };
         }
         public void FormatTo28Bit(ref UInt32 value)
-        {
-            value &= 0xfffffff;
-        }
+            => value &= 0xfffffff;
         public byte GetBitIndex64(UInt64 value, int number)
-        {
-            return (value >> (number - 1) & (Int64)1) == (Int64)1 ? (byte)1 : (byte)0;
-        }
+            => (value >> (number - 1) & (Int64)1) == (Int64)1 ? (byte)1 : (byte)0;
         public byte GetBitIndex32(UInt32 value, int number)
-        {
-            return (value >> (number - 1) & 1) == 1 ? (byte)1 : (byte)0;
-        }
+            => (value >> (number - 1) & 1) == 1 ? (byte)1 : (byte)0;
         public byte GetBitIndexByte(byte value, int number)
-        {
-            return (value >> (number - 1) & 1) == 1 ? (byte)1 : (byte)0;
-        }
+            => (value >> (number - 1) & 1) == 1 ? (byte)1 : (byte)0;
         public void LeftShift(ref UInt32 value)
         {
             byte bitLeading = GetBitIndex32(value,28);

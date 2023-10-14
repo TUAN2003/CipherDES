@@ -19,7 +19,7 @@ namespace WinFormsEncryptionDES
             string key = this.textBox_key.Text.Trim();
             string data = this.textBox_data.Text.Trim();
             bool isKeyHex = radioButton_isKeyHex.Checked;
-            bool isDataHex =radioButton_isHex.Checked;
+            bool isDataHex = radioButton_isHex.Checked;
             if (!CheckKey(key, isKeyHex))
             {
                 MessageBox.Show("Key không hợp lệ", "Lỗi định dạng key", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -54,10 +54,6 @@ namespace WinFormsEncryptionDES
             form.Show();
             form.Activate();
         }
-        private bool CheckInput(string input,bool isHex)
-        {
-            return true;
-        }
         private bool CheckKey(string key,bool isHex)
         {
             try
@@ -79,13 +75,8 @@ namespace WinFormsEncryptionDES
         }
         private UInt64 ConvertTextToHex(string key)
         {
-            int length = key.Length;
-            if(length != 8)
-            {
-                throw new Exception("length != 8");
-            }
-            byte[] bytes = Encoding.ASCII.GetBytes(key);
-            string hex = BitConverter.ToString(bytes).Replace("-", "");
+            byte[] bytes = Encoding.UTF8.GetBytes(key);
+            string hex = BitConverter.ToString(bytes).Replace("-", "").PadRight(16,'0');
             return UInt64.Parse(hex, NumberStyles.HexNumber);
         }
         private void button_decrypt_Click(object sender, EventArgs e)
