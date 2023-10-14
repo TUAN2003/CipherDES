@@ -386,7 +386,7 @@ namespace WinFormsEncryptionDES
         {
             return BuildEnCode(block,_c0,_d0);
         }
-        protected virtual string BuildEnCode(ulong block,uint c0,uint d0)
+        private string BuildEnCode(ulong block,uint c0,uint d0)
         {
             uint[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
             uint l0 = uints[0];
@@ -412,7 +412,11 @@ namespace WinFormsEncryptionDES
                 res += BuildEnCode(_blocks[i]);
             return res;
         }
-        protected virtual string BuildDeCode(ulong block,uint c0,uint d0)
+        protected virtual string BuildDeCode(ulong block)
+        {
+            return BuildDeCode(block, _c0, _d0);
+        }
+        private string BuildDeCode(ulong block,uint c0,uint d0)
         {
             uint[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
             uint l0 = uints[0];
