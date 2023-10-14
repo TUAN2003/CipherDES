@@ -133,10 +133,10 @@ namespace WinFormsEncryptionDES
             7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8,
             2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11
         };
-        private UInt64 _key;
-        private UInt32 _c0;
-        private UInt32 _d0;
-        private UInt64[] _blocks;
+        private ulong _key;
+        private uint _c0;
+        private uint _d0;
+        private ulong[] _blocks;
         private bool _isDataHex = true;
         public string[] HistoryKey = new string[16];
         public List<string> HistoryLeft = new List<string>();
@@ -144,9 +144,10 @@ namespace WinFormsEncryptionDES
         public bool IsDataHex
         {
             set => _isDataHex = value;
+
             get => _isDataHex;
         }
-        public UInt64 Key
+        public virtual ulong Key
         {
             set
             {
@@ -165,69 +166,67 @@ namespace WinFormsEncryptionDES
             }
             get => _data;
         }
-        public UInt64[] Blocks { get => _blocks; }
+        public ulong[] Blocks { get => _blocks; }
         public DESAlgorithm()
             : this(null, 0)
-        {
-
-        }
-        public DESAlgorithm(string data,UInt64 key, bool isDataHex = true)
+        {}
+        public DESAlgorithm(string data,ulong key, bool isDataHex = true)
            => Inital(data, key,isDataHex);
-        private void Inital(string data,UInt64 key, bool isDataHex)
+        protected virtual void Inital(string data,ulong key, bool isDataHex)
         {
             Data = data;
             Key = key;
             _isDataHex = isDataHex;
         }
-        private void InitalKey()
+        protected virtual void InitalKey()
         {
-            UInt32[] uints = SplitInt64ToDouble28Bit(PermutationPC1(_key));
+            uint[] uints = SplitInt64ToDouble28Bit(PermutationPC1(_key));
             _c0 = uints[0];
             _d0 = uints[1];
         }
-        public UInt32[] SplitInt64ToDouble32Bit(UInt64 value)
+        public uint[] SplitInt64ToDouble32Bit(ulong value)
         {
-            UInt32 right = (UInt32)(value & 0xffffffff);
+            uint right = (uint)(value & 0xffffffff);
             value >>= 32;
-            UInt32 left = (UInt32)(value & 0xffffffff);
-            return new UInt32[] { left,right };
+            uint left = (uint)(value & 0xffffffff);
+            return new uint[] { left,right };
         }
-        public UInt32[] SplitInt64ToDouble28Bit(UInt64 value)
+        public uint[] SplitInt64ToDouble28Bit(ulong value)
         {
-            UInt32 right = (UInt32)(value & 0xfffffff);
+            uint right = (uint)(value & 0xfffffff);
             value >>= 28;
-            UInt32 left = (UInt32)(value & 0xfffffff);
-            return new UInt32[] { left, right };
+            uint left = (uint)(value & 0xfffffff);
+            return new uint[] { left, right };
         }
-        public void FormatTo28Bit(ref UInt32 value)
+        public void FormatTo28Bit(ref uint value)
             => value &= 0xfffffff;
-        public byte GetBitIndex64(UInt64 value, int number)
+        public byte GetBitIndex64(ulong value, int number)
             => (value >> (number - 1) & (Int64)1) == (Int64)1 ? (byte)1 : (byte)0;
-        public byte GetBitIndex32(UInt32 value, int number)
+        public byte GetBitIndex32(uint value, int number)
             => (value >> (number - 1) & 1) == 1 ? (byte)1 : (byte)0;
         public byte GetBitIndexByte(byte value, int number)
             => (value >> (number - 1) & 1) == 1 ? (byte)1 : (byte)0;
-        public void LeftShift(ref UInt32 value)
+        public void LeftShift(ref uint value)
         {
             byte bitLeading = GetBitIndex32(value,28);
             value <<= 1;
             value |= bitLeading;
         }
-        public void LeftShiftBits(ref UInt32 value,byte numberCalls)
+        public void LeftShiftBits(ref uint value,byte numberCalls)
         {
             for (byte b = 0; b < numberCalls; b++)
                 LeftShift(ref value);
         }
-        public UInt64 Merge64Bit(UInt32 left,UInt32 right,byte leftShift)
+        public ulong Merge64Bit(uint left,uint right,byte leftShift)
         {
-            UInt64 left64 = left;
-            UInt64 right64 = right;
+            ulong left64 = left;
+            ulong right64 = right;
             left64 <<= leftShift;
             return left64 | right64;
         }
-        private UInt64 PermutationPC1(UInt64 value)
+        protected ulong PermutationPC1(ulong value)
         {
-            UInt64 result = 0;
+            ulong result = 0;
             byte temp;
             byte length = (byte)PermutionTables.PC1;
             for (byte b = 0; b < length; b++)
@@ -238,9 +237,9 @@ namespace WinFormsEncryptionDES
             }
             return result >> 1;
         }
-        private UInt64 PermutationPC2(UInt64 value)
+        protected ulong PermutationPC2(ulong value)
         {
-            UInt64 result = 0;
+            ulong result = 0;
             byte temp;
             byte length = (byte)PermutionTables.PC2;
             for (byte b = 0; b < length; b++)
@@ -251,9 +250,8 @@ namespace WinFormsEncryptionDES
             }
             return result >> 1;
         }
-
         // GENERATE NEW KEY
-        private UInt64 GenerateKey(ref UInt32 left, ref UInt32 right,int number)
+        private ulong GenerateKey(ref uint left, ref uint right,int number)
         {
             LeftShiftBits(ref left, _TABLE_SHIFT_BIT[number - 1]);
             LeftShiftBits(ref right, _TABLE_SHIFT_BIT[number - 1]);
@@ -261,9 +259,9 @@ namespace WinFormsEncryptionDES
             FormatTo28Bit(ref right);
             return PermutationPC2(Merge64Bit(left, right,28));
         }
-        private UInt64 PermutionE(UInt32 value)
+        protected ulong PermutionE(uint value)
         {
-            UInt64 result = 0;
+            ulong result = 0;
             byte temp;
             byte length = (byte)PermutionTables.E;
             for (byte b = 0; b < length; b++)
@@ -318,9 +316,9 @@ namespace WinFormsEncryptionDES
             }
             return temp;
         }
-        private UInt32 GatherToInt32(byte[] bytes)
+        private uint GatherToInt32(byte[] bytes)
         {
-            UInt32 result = 0;
+            uint result = 0;
             for (byte b = 0; b < 7; b++)
             {
                 result |= bytes[b];
@@ -328,9 +326,9 @@ namespace WinFormsEncryptionDES
             }
             return result | bytes[7];
         }
-        private UInt32 PermutionP(UInt32 value)
+        protected uint PermutionP(uint value)
         {
-            UInt32 result = 0;
+            uint result = 0;
             byte temp;
             byte length = (byte)PermutionTables.P;
             for (byte b = 0; b < length - 1; b++)
@@ -341,10 +339,10 @@ namespace WinFormsEncryptionDES
             }
             return result | GetBitIndex32(value, 33 - _P[length-1]);
         }
-        private UInt32 Feistel(UInt32 right, UInt64 key)
+        private uint Feistel(uint right, ulong key)
         {
-            UInt64 E = PermutionE(right);
-            UInt64 E_XOR_KEY = E ^ key;
+            ulong E = PermutionE(right);
+            ulong E_XOR_KEY = E ^ key;
 
             byte[] bytes = new byte[8];
             BoxS[] boxs = { BoxS.S1, BoxS.S2, BoxS.S3, BoxS.S4, BoxS.S5, BoxS.S6, BoxS.S7, BoxS.S8 };
@@ -355,12 +353,12 @@ namespace WinFormsEncryptionDES
                 bytes[7-b] = GetValueIndexOfBox(temp, boxs[7-b]);
                 E_XOR_KEY >>= 6;
             }
-            UInt32 value = GatherToInt32(bytes);
+            uint value = GatherToInt32(bytes);
             return PermutionP(value);
         }
-        private UInt64 PermutionIP(UInt64 block)
+        protected ulong PermutionIP(ulong block)
         {
-            UInt64 result = 0;
+            ulong result = 0;
             byte temp;
             byte length = (byte)PermutionTables.IP;
             for (byte b = 0; b < length - 1; b++)
@@ -371,9 +369,9 @@ namespace WinFormsEncryptionDES
             }
             return result | GetBitIndex64(block, 65 - _IP[length - 1]);
         }
-        private UInt64 PermutionInverseIP(UInt64 data)
+        protected ulong PermutionInverseIP(ulong data)
         {
-            UInt64 result = 0;
+            ulong result = 0;
             byte temp;
             byte length = (byte)PermutionTables.IP1;
             for (byte b = 0; b < length-1; b++)
@@ -384,15 +382,19 @@ namespace WinFormsEncryptionDES
             }
             return result | GetBitIndex64(data, 65 - _IP1[length - 1]);
         }
-        protected string BuildEnCode(UInt64 block)
+        protected virtual string BuildEnCode(ulong block)
         {
-            UInt32[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
-            UInt32 l0 = uints[0];
-            UInt32 r0 = uints[1];
-            UInt32 c0 = _c0;
-            UInt32 d0 = _d0;
-            UInt64 newKey;
-            UInt32 temp;
+            return BuildEnCode(block,_c0,_d0);
+        }
+        protected virtual string BuildEnCode(ulong block,uint __c0,uint __d0)
+        {
+            uint[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
+            uint l0 = uints[0];
+            uint r0 = uints[1];
+            uint c0 = __c0;
+            uint d0 = __d0;
+            ulong newKey;
+            uint temp;
             for (int i = 1; i <= 16; i++)
             {
                 newKey = GenerateKey(ref c0,ref d0,i);
@@ -401,10 +403,10 @@ namespace WinFormsEncryptionDES
                 l0 = temp;
                 SaveHistory(i - 1, newKey, l0, r0);
             }
-            UInt64 a = Merge64Bit(r0, l0, 32);
+            ulong a = Merge64Bit(r0, l0, 32);
             return PermutionInverseIP(a).ToString("x").PadLeft(16, '0').ToUpper();
         }
-        public string EnCode()
+        public virtual string EnCode()
         {
             int size = _blocks.Length;
             string res = (size == 0? null: "");
@@ -412,16 +414,16 @@ namespace WinFormsEncryptionDES
                 res += BuildEnCode(_blocks[i]);
             return res;
         }
-        protected string BuildDeCode(UInt64 block)
+        protected virtual string BuildDeCode(ulong block,uint __c0,uint __d0)
         {
-            UInt32[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
-            UInt32 l0 = uints[0];
-            UInt32 r0 = uints[1];
-            UInt32 c0 = _c0;
-            UInt32 d0 = _d0;
-            UInt64[] keys = new UInt64[16];
-            UInt64 key;
-            UInt32 temp;
+            uint[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
+            uint l0 = uints[0];
+            uint r0 = uints[1];
+            uint c0 = __c0;
+            uint d0 = __d0;
+            ulong[] keys = new ulong[16];
+            ulong key;
+            uint temp;
             for (int i = 1; i <= 16; i++)
             {
                 keys[i-1] = GenerateKey(ref c0, ref d0, i);
@@ -434,35 +436,35 @@ namespace WinFormsEncryptionDES
                 l0 = temp;
                 SaveHistory(i, key, l0, r0);
             }
-            UInt64 a = Merge64Bit(r0, l0, 32);
+            ulong a = Merge64Bit(r0, l0, 32);
             return PermutionInverseIP(a).ToString("x").PadLeft(16,'0').ToUpper();
         }
-        public string DeCode(bool returnTypeText = false)
+        public virtual string DeCode(bool returnTypeText = false)
         {
             int size = _blocks.Length;
             string res = (size == 0 ? null : "");
             for (int i = 0; i < size; i++)
-                res += BuildDeCode(_blocks[i]);
+                res += BuildDeCode(_blocks[i], _c0, _d0);
             if (returnTypeText)
                 return HexToPlainText(res);
             return res;
         }
-        private UInt64[] SplitData(string data)
+        private ulong[] SplitData(string data)
         {
             if (string.IsNullOrEmpty(data))
-                return new UInt64[0];
+                return new ulong[0];
             if (_isDataHex)
             {
                 return SplitDataHex(data);
             }
             return SplitDataText(data);
         }
-        private UInt64[] SplitDataHex(string data)
+        private ulong[] SplitDataHex(string data)
         {
             int length = data.Length;
             int r = length % 16;
             int lengthBlocks = (r == 0 ? length/16 : (length/16)+1);
-            UInt64[] blocks = new UInt64[lengthBlocks];
+            ulong[] blocks = new ulong[lengthBlocks];
             int temp = 0;
             try
             {
@@ -477,12 +479,12 @@ namespace WinFormsEncryptionDES
             }
             return blocks;
         }
-        private UInt64[] SplitDataText(string data)
+        private ulong[] SplitDataText(string data)
         {
             string dataHex = PlainTextToHex(data);
             return SplitDataHex(dataHex);
         }
-        private void SaveHistory(int index,UInt64 hKey,UInt32 hLeft,UInt32 hRight)
+        private void SaveHistory(int index,ulong hKey,uint hLeft,uint hRight)
         {
             HistoryKey[index] = hKey.ToString("x");
             HistoryLeft.Add(hLeft.ToString("x"));
