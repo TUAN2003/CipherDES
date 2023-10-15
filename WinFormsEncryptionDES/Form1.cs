@@ -42,6 +42,8 @@ namespace WinFormsEncryptionDES
             {
                 if (isHex)
                 {
+                    if (key.Length < 16)
+                        return false;
                     _des.Key = UInt64.Parse(key, NumberStyles.HexNumber);
                 }
                 else
