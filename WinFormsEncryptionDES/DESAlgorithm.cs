@@ -134,6 +134,7 @@ namespace WinFormsEncryptionDES
             2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11
         };
         private ulong _key;
+        private ulong[] _hostKey = new ulong[16];
         private uint _c0;
         private uint _d0;
         private ulong[] _blocks;
@@ -183,6 +184,8 @@ namespace WinFormsEncryptionDES
             uint[] uints = SplitInt64ToDouble28Bit(PermutationPC1(_key));
             _c0 = uints[0];
             _d0 = uints[1];
+            for(byte b = 1; b <= 16; b++)
+                _hostKey[b - 1] = GenerateKey(ref _c0, ref _d0, b);
         }
         public uint[] SplitInt64ToDouble32Bit(ulong value)
         {
@@ -384,10 +387,6 @@ namespace WinFormsEncryptionDES
         }
         protected virtual string BuildEnCode(ulong block)
         {
-            return BuildEnCode(block,_c0,_d0);
-        }
-        private string BuildEnCode(ulong block,uint c0,uint d0)
-        {
             uint[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
             uint l0 = uints[0];
             uint r0 = uints[1];
@@ -395,7 +394,7 @@ namespace WinFormsEncryptionDES
             uint temp;
             for (int i = 1; i <= 16; i++)
             {
-                newKey = GenerateKey(ref c0,ref d0,i);
+                newKey = _hostKey[i - 1];
                 temp = r0;
                 r0 = l0 ^ Feistel(r0, newKey);
                 l0 = temp;
@@ -412,25 +411,16 @@ namespace WinFormsEncryptionDES
                 res += BuildEnCode(_blocks[i]);
             return res;
         }
-        protected virtual string BuildDeCode(ulong block)
-        {
-            return BuildDeCode(block, _c0, _d0);
-        }
-        private string BuildDeCode(ulong block,uint c0,uint d0)
+        protected string BuildDeCode(ulong block)
         {
             uint[] uints = SplitInt64ToDouble32Bit(PermutionIP(block));
             uint l0 = uints[0];
             uint r0 = uints[1];
-            ulong[] keys = new ulong[16];
             ulong key;
             uint temp;
-            for (int i = 1; i <= 16; i++)
-            {
-                keys[i-1] = GenerateKey(ref c0, ref d0, i);
-            }
             for (int i = 0; i < 16; i++)
             {
-                key = keys[15 - i];
+                key = _hostKey[15 - i];
                 temp = r0;
                 r0 = l0 ^ Feistel(r0, key);
                 l0 = temp;
@@ -444,7 +434,7 @@ namespace WinFormsEncryptionDES
             int size = _blocks.Length;
             string res = (size == 0 ? null : "");
             for (int i = 0; i < size; i++)
-                res += BuildDeCode(_blocks[i], _c0, _d0);
+                res += BuildDeCode(_blocks[i]);
             if (returnTypeText)
                 return HexToPlainText(res);
             return res;
