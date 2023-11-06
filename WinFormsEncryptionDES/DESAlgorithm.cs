@@ -409,7 +409,7 @@ namespace WinFormsEncryptionDES
             StringBuilder res = (size == 0 ? null : new StringBuilder(""));
             for (int i = 0; i < size; i++)
                 res.Append(BuildEnCode(_blocks[i]));
-            return res.ToString();
+            return res?.ToString();
         }
         protected string BuildDeCode(ulong block)
         {
@@ -435,7 +435,7 @@ namespace WinFormsEncryptionDES
             StringBuilder sb = (size == 0 ? null : new StringBuilder(""));
             for (int i = 0; i < size; i++)
                 sb.Append(BuildDeCode(_blocks[i]));
-            string res = sb.ToString();
+            string res = sb?.ToString() ?? "";
             if (returnTypeText)
                 return HexToPlainText(res);
             return res;
