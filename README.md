@@ -7,5 +7,4 @@
 - DES
 - 3DES
 ## Installation
-- Step 1: Enter input
-[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)]
+- Step 1: On the main Desktop screen, create new folder here, example: CipherDES
